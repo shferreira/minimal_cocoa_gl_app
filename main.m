@@ -104,17 +104,14 @@ int main(int argc, char **argv)
     id view = [[NSView new] autorelease];
     [window setContentView:view];
     [window makeFirstResponder:view];
+    [window setAcceptsMouseMovedEvents:YES];
 
     // Create the Context
-    GLint swapInterval = 1;
-    NSOpenGLPixelFormatAttribute attrs[] = {
-        NSOpenGLPFADoubleBuffer,  NSOpenGLPFADepthSize,          24,
-        NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core, 0};
-    id format =
-        [[[NSOpenGLPixelFormat alloc] initWithAttributes:attrs] autorelease];
-    id context = [[[NSOpenGLContext alloc] initWithFormat:format
-                                             shareContext:nil] autorelease];
-    [context setValues:&swapInterval forParameter:NSOpenGLContextParameterSwapInterval];
+    id context = [[[NSOpenGLContext alloc]
+        initWithFormat:[[[NSOpenGLPixelFormat alloc]
+                           initWithAttributes:(uint32_t[]){99, 0x4100, 0}]
+                           autorelease]
+          shareContext:nil] autorelease];
     [context setView:view];
     [context makeCurrentContext];
 
