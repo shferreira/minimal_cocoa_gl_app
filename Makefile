@@ -1,4 +1,5 @@
-all:
-	@clang -Wall -pedantic -framework CoreAudio -framework Cocoa -framework OpenGL -framework CoreVideo -framework AudioUnit -framework IOKit mac.m -o main
-	@./main
-	@rm ./main
+FRAMEWORKS = Cocoa IOKit OpenGL
+CCOPTS = -fmodules -O3 -Wall -pedantic -Wno-deprecated-declarations
+
+main: main.m
+	$(CC) $(CCOPTS) $(addprefix -framework ,$(FRAMEWORKS)) $< -o $@
