@@ -115,6 +115,12 @@ int main(int argc, char **argv)
     [context setView:view];
     [context makeCurrentContext];
 
+    // Setup OpenGL
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     // Setup observers
     __block int running = 1;
     [[NSNotificationCenter defaultCenter]
@@ -157,7 +163,6 @@ int main(int argc, char **argv)
       // Renderer
       glViewport(0, 0, (int)[view frame].size.width,
                  (int)[view frame].size.height);
-      glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
       glClear(GL_COLOR_BUFFER_BIT);
       glFlush();
 
