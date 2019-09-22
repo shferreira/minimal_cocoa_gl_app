@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
   @autoreleasepool
   {
-    [NSApplication sharedApplication];
+    id app = [NSApplication sharedApplication];
 
     // Get the Application Name
     id bundleName = [[NSProcessInfo processInfo] processName];
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     [[appMenu addItemWithTitle:@"Quit"
                         action:@selector(terminate:)
                  keyEquivalent:@"q"] autorelease];
-    [NSApp setServicesMenu:servicesMenu];
+    [app setServicesMenu:servicesMenu];
 
     // Create the Window Menu
     id windowMenu = [[[NSMenu alloc] initWithTitle:@"Window"] autorelease];
@@ -62,14 +62,14 @@ int main(int argc, char **argv)
     [[windowMenu addItemWithTitle:@"Bring All to Front"
                            action:@selector(arrangeInFront:)
                     keyEquivalent:@""] autorelease];
-    [NSApp setWindowsMenu:windowMenu];
+    [app setWindowsMenu:windowMenu];
 
     // Create the Help Menu
     id helpMenu = [[[NSMenu alloc] initWithTitle:@"Help"] autorelease];
     [[helpMenu addItemWithTitle:@"Documentation"
                          action:@selector(docs:)
                   keyEquivalent:@""] autorelease];
-    [NSApp setHelpMenu:helpMenu];
+    [app setHelpMenu:helpMenu];
 
     // Create the Menu Bar
     id menubar = [[NSMenu new] autorelease];
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                   keyEquivalent:@""] autorelease] setSubmenu:windowMenu];
     [[[menubar addItemWithTitle:@"Help" action:NULL
                   keyEquivalent:@""] autorelease] setSubmenu:helpMenu];
-    [NSApp setMainMenu:menubar];
+    [app setMainMenu:menubar];
 
     // Create the Window
     NSWindow *window =
@@ -90,10 +90,11 @@ int main(int argc, char **argv)
                                                NSWindowStyleMaskMiniaturizable
                                        backing:NSBackingStoreBuffered
                                          defer:NO] autorelease];
+    [window setTitle:(displayName ? displayName : bundleName)];
     [window cascadeTopLeftFromPoint:NSMakePoint(20, 20)];
     [window setMinSize:NSMakeSize(300, 200)];
+    [window setAcceptsMouseMovedEvents:YES];
     [window makeKeyAndOrderFront:nil];
-    [window setTitle:(displayName ? displayName : bundleName)];
     [window center];
 
     // Disable tabbing
@@ -102,9 +103,8 @@ int main(int argc, char **argv)
 
     // Create the View
     id view = [[NSView new] autorelease];
-    [window setContentView:view];
     [window makeFirstResponder:view];
-    [window setAcceptsMouseMovedEvents:YES];
+    [window setContentView:view];
 
     // Create the Context
     id context = [[[NSOpenGLContext alloc]
@@ -133,32 +133,36 @@ int main(int argc, char **argv)
 
     // Start the Timer
     double timerCurrent = CACurrentMediaTime();
+    double lag = 0.0;
 
     // Finish loading
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [NSApp activateIgnoringOtherApps:YES];
-    [NSApp finishLaunching];
+    [app setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [app activateIgnoringOtherApps:YES];
+    [app finishLaunching];
 
     // Game Loop
     while (running)
     {
       NSEvent *event;
-      while ((event = [NSApp nextEventMatchingMask:NSEventMaskAny
+      while ((event = [app nextEventMatchingMask:NSEventMaskAny
                                          untilDate:[NSDate distantPast]
                                             inMode:NSDefaultRunLoopMode
                                            dequeue:YES]) != nil)
       {
-        if ([event type] == NSEventTypeKeyDown &&
-            !([event modifierFlags] & NSEventModifierFlagCommand))
-          continue;
-
-        [NSApp sendEvent:event];
+        if ([event type] != NSEventTypeKeyDown ||
+            [event modifierFlags] & NSEventModifierFlagCommand)
+          [app sendEvent:event];
       }
 
       // Update Timer
       double timerNext = CACurrentMediaTime();
       double timerDelta = timerNext - timerCurrent;
       timerCurrent = timerNext;
+
+      // Fixed updates
+      for (lag += timerDelta; lag >= 1.0 / 60.0; lag -= 1.0 / 60.0)
+      {
+      }
 
       // Renderer
       glViewport(0, 0, (int)[view frame].size.width,
@@ -172,6 +176,6 @@ int main(int argc, char **argv)
     // Terminate
     IOPMAssertionRelease(assertionID);
 
-    [NSApp terminate:nil];
+    [app terminate:nil];
   }
 }
