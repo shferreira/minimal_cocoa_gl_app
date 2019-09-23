@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     // Create the Context
     id context = [[[NSOpenGLContext alloc]
         initWithFormat:[[[NSOpenGLPixelFormat alloc]
-                           initWithAttributes:(uint32_t[]){99, 0x4100, 0}]
+                           initWithAttributes:(uint[]){99, 0x4100, 0}]
                            autorelease]
           shareContext:nil] autorelease];
     [context setView:view];
@@ -145,9 +145,9 @@ int main(int argc, char **argv)
     {
       NSEvent *event;
       while ((event = [app nextEventMatchingMask:NSEventMaskAny
-                                         untilDate:[NSDate distantPast]
-                                            inMode:NSDefaultRunLoopMode
-                                           dequeue:YES]) != nil)
+                                       untilDate:[NSDate distantPast]
+                                          inMode:NSDefaultRunLoopMode
+                                         dequeue:YES]) != nil)
       {
         if ([event type] != NSEventTypeKeyDown ||
             [event modifierFlags] & NSEventModifierFlagCommand)
