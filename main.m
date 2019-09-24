@@ -1,6 +1,7 @@
 @import Cocoa;
 @import IOKit.pwr_mgt;
-@import OpenGL.GL3;
+@import Metal;
+@import QuartzCore;
 
 int main(int argc, char **argv)
 {
@@ -106,20 +107,14 @@ int main(int argc, char **argv)
     [window makeFirstResponder:view];
     [window setContentView:view];
 
-    // Create the Context
-    id context = [[[NSOpenGLContext alloc]
-        initWithFormat:[[[NSOpenGLPixelFormat alloc]
-                           initWithAttributes:(uint[]){99, 0x4100, 0}]
-                           autorelease]
-          shareContext:nil] autorelease];
-    [context setView:view];
-    [context makeCurrentContext];
+    // Create the Metal device
+    id metalDevice = [MTLCreateSystemDefaultDevice() autorelease];
+    id commandQueue = [[metalDevice newCommandQueue] autorelease];
 
-    // Setup OpenGL
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // Create the Context
+    id layer = [[CAMetalLayer layer] autorelease];
+    [layer setDevice:metalDevice];
+    [view setLayer:layer];
 
     // Setup observers
     __block int running = 1;
@@ -169,12 +164,10 @@ int main(int argc, char **argv)
       int h = (int)[view frame].size.height;
 
       // Renderer
-      glViewport(0, 0, w, h);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      // Finish Rendering
-      glFlush();
-      [context flushBuffer];
+      id drawable = [layer nextDrawable];
+      id buffer = [commandQueue commandBuffer];
+      [buffer presentDrawable:drawable];
+      [buffer commit];
     }
 
     // Terminate
