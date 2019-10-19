@@ -1,6 +1,6 @@
 @import Cocoa;
 @import IOKit.pwr_mgt;
-@import OpenGL.GL;
+@import OpenGL.GL3;
 
 int main(int argc, char **argv)
 {
@@ -133,6 +133,7 @@ int main(int argc, char **argv)
 
     // Start the Timer
     double timerCurrent = CACurrentMediaTime();
+    double timerStart = timerCurrent;
     double lag = 0.0;
 
     // Finish loading
@@ -164,12 +165,15 @@ int main(int argc, char **argv)
       {
       }
 
-      // Renderer
-      glViewport(0, 0, (int)[view frame].size.width,
-                 (int)[view frame].size.height);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glFlush();
+      int w = (int)[view frame].size.width;
+      int h = (int)[view frame].size.height;
 
+      // Renderer
+      glViewport(0, 0, w, h);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // Finish Rendering
+      glFlush();
       [context flushBuffer];
     }
 
